@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Combustible: planificá tu alimentación semanal según tus clases y ensayos de danza.">
+<meta name="theme-color" content="#F1EFEA">
+<title>Combustible · Nutrición para bailarines</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#F1EFEA;--surface:#FFFFFF;--ink:#1E2528;--muted:#5E696D;--line:#D9D6CE;
+  --accent:#C9566B;--accent-ink:#FFFFFF;--soft:#F6DDE1;--sage:#4F7A66;--sage-soft:#DCE9E1;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#171B1D;--surface:#21272A;--ink:#EEEBE6;--muted:#A3AEB2;--line:#343C40;
+  --accent:#E57C90;--accent-ink:#1A1012;--soft:#3A262B;--sage:#7DB599;--sage-soft:#243229;
+}}
+:root[data-theme="dark"]{
+  --bg:#171B1D;--surface:#21272A;--ink:#EEEBE6;--muted:#A3AEB2;--line:#343C40;
+  --accent:#E57C90;--accent-ink:#1A1012;--soft:#3A262B;--sage:#7DB599;--sage-soft:#243229;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+main{max-width:560px;margin:0 auto;padding:20px 18px 96px}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;margin:0;letter-spacing:-.01em}
+h1{font-size:2rem;font-weight:800;line-height:1.05}
+h2{font-size:1.25rem;font-weight:700;margin-bottom:10px}
+h3{font-size:1.02rem;font-weight:700}
+p{margin:0 0 10px}
+.sub{color:var(--muted);margin:6px 0 20px;max-width:46ch}
+.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--surface);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));z-index:20}
+.tabs button{flex:1;border:0;background:none;color:var(--muted);font:600 .9rem "Instrument Sans",sans-serif;padding:12px 4px;border-radius:12px;cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--accent-ink);background:var(--accent)}
+button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.chip{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 14px;border-radius:999px;font:500 .95rem "Instrument Sans",sans-serif;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.field{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.field label{color:var(--muted);font-size:.95rem}
+input[type=time]{font:600 1.1rem "Instrument Sans",sans-serif;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+.tl{list-style:none;margin:0 0 26px;padding:0;position:relative}
+.tl::before{content:"";position:absolute;left:46px;top:10px;bottom:10px;width:2px;background:var(--line)}
+.tl li{display:grid;grid-template-columns:44px 1fr;gap:20px;padding:8px 0;align-items:start}
+.tl time{font:700 .95rem "Bricolage Grotesque",sans-serif;padding-top:12px;text-align:right}
+.step{position:relative;text-align:left;width:100%;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:14px;padding:12px 14px;cursor:pointer;font:inherit}
+.step::before{content:"";position:absolute;left:-26px;top:17px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--muted)}
+.step b{display:block;font-weight:600}
+.step span{color:var(--muted);font-size:.92rem}
+.step.event{background:var(--soft);border-color:transparent}
+.step.event::before{background:var(--accent);border-color:var(--accent)}
+.step.done{opacity:.55}
+.step.done::before{background:var(--sage);border-color:var(--sage)}
+.step.done b{text-decoration:line-through}
+.water{background:var(--sage-soft);border-radius:16px;padding:16px;margin-bottom:22px}
+.cups{display:flex;gap:6px;margin:10px 0}
+.cup{flex:1;height:42px;border-radius:8px 8px 14px 14px;border:2px solid var(--sage);background:transparent;cursor:pointer}
+.cup[aria-pressed="true"]{background:var(--sage)}
+.note{font-size:.88rem;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.card ul{margin:8px 0 0;padding-left:18px}
+.card li{margin-bottom:4px}
+.tag{display:inline-block;background:var(--sage-soft);color:var(--sage);font-weight:600;font-size:.82rem;padding:2px 10px;border-radius:999px;margin-bottom:6px}
+details{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;padding:0 16px}
+summary{cursor:pointer;padding:14px 0;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:10px}
+summary::after{content:"+";color:var(--accent);font-weight:700}
+details[open] summary::after{content:"–"}
+details p,details ul{color:var(--ink)}
+details ul{padding-left:18px;margin:0 0 12px}
+.care{background:var(--soft);border-radius:14px;padding:14px 16px;margin-top:18px;font-size:.93rem}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:no-preference){.step,.chip,.cup{transition:background .15s,opacity .15s}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:18px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.row label{color:var(--muted);font-size:.95rem}
+select{font:500 .95rem "Instrument Sans",sans-serif;padding:9px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+.x{border:0;background:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:6px 10px;margin-left:auto}
+.add{border:1.5px dashed var(--accent);background:none;color:var(--accent);font:600 .95rem "Instrument Sans",sans-serif;padding:10px 14px;border-radius:12px;cursor:pointer}
+.bar{position:relative;height:34px;border-radius:10px;background:var(--surface);border:1px solid var(--line);overflow:hidden}
+.seg{position:absolute;top:0;bottom:0}
+.sg-s{background:var(--line)}.sg-d{background:var(--accent)}
+.tick{position:absolute;top:8px;bottom:8px;width:6px;border-radius:3px;background:var(--sage);transform:translateX(-3px);box-shadow:0 0 0 2px var(--surface)}
+.hours{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin:4px 2px 0}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin:8px 0 14px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+.step{cursor:default}
+.step.quiet{background:transparent;border-style:dashed}
+.step.warn{border-color:var(--accent)}
+.warnt{color:var(--accent);font-weight:600;font-size:.88rem;margin-top:4px}
+.ctl{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:10px;font-size:.9rem}
+.ctl input[type=time]{font-size:.95rem;padding:5px 8px}
+.ctl input[type=checkbox]{width:18px;height:18px;accent-color:var(--sage);vertical-align:-3px}
+.lnk{border:0;background:none;color:var(--accent);font:600 .88rem "Instrument Sans",sans-serif;text-decoration:underline;cursor:pointer;padding:4px}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:0 0 20px}
+.days button{position:relative;padding:10px 0;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:600 .85rem "Instrument Sans",sans-serif;cursor:pointer}
+.days button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.days button.today::after{content:"";position:absolute;left:50%;bottom:4px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--accent)}
+.card .lnk{margin-top:6px;padding-left:0}
+.langbar{display:flex;justify-content:flex-end;margin-bottom:8px}
+</style>
+</head>
+<body>
+<main>
+  <div class="langbar"><select id="lang" aria-label="Idioma / Language"></select></div>
+  <section id="hoy">
+    <h1>Combustible</h1>
+    <p class="sub" data-t>Armá tu semana: cada día tiene sus propias clases y horarios, y la comida se organiza alrededor.</p>
+    <div class="days" id="days" role="group" aria-label="Día de la semana"></div>
+    <h2 data-t>Tu nivel</h2>
+    <div class="chips" id="levels" role="group" aria-label="Nivel"></div>
+    <p class="note" id="lvDesc" style="margin-bottom:18px"></p>
+    <div class="panel">
+      <h3 id="dayName"></h3>
+      <p class="note" style="margin:6px 0 10px" data-t>¿Cómo es este día? Elegí uno y después ajustá lo que quieras.</p>
+      <div class="chips" id="dtype" role="group" aria-label="Tipo de día"></div>
+      <div class="row" style="margin:10px 0 0">
+        <label for="wake" data-t>Me despierto</label><input type="time" id="wake">
+        <label for="bed" data-t>Me acuesto</label><input type="time" id="bed">
+      </div>
+      <div class="row" style="margin:14px 0 0"><select id="copyTo" aria-label="Copiar este día"></select><span class="note" id="copyMsg"></span></div>
+    </div>
+    <div class="panel">
+      <h3 data-t>Clases y ensayos</h3>
+      <p class="note" data-t>Sumá todas las que tengas. Tus horarios de baile no se mueven: la comida se adapta a ellos.</p>
+      <div id="classes"></div>
+      <button class="add" id="addC" data-t>+ Agregar clase</button>
+      <p class="note" id="sumry" style="margin:10px 0 0"></p>
+    </div>
+    <h2 data-t>Tu día en 24 horas</h2>
+    <div id="dayBar"></div>
+    <p class="note" id="hint" style="margin:0 0 14px"></p>
+    <ol class="tl" id="timeline"></ol>
+    <div class="water">
+      <h3 data-t>Agua de hoy</h3>
+      <div class="cups" id="cups"></div>
+      <p class="note" style="margin:0" data-t>Una base orientativa según tu nivel. Si ensayás mucho o hace calor, tomá más. La orina clara es una buena señal.</p>
+    </div>
+  </section>
+
+  
+<section id="ideas" hidden>
+    <h1 data-t>Ideas</h1>
+    <p class="sub" data-t>Opciones simples para llevar en el bolso. Elegí cómo comés y las sugerencias se ajustan, también en tu rutina de Hoy.</p>
+    <h2 data-t>Tu alimentación</h2>
+    <div class="chips" id="diets" role="group" aria-label="Alimentación"></div>
+    <p class="note" id="dietNote" hidden data-t>En productos envasados, buscá siempre el sello sin TACC. La avena común puede tener trazas de gluten: elegí una certificada.</p>
+    <div id="ideaList"></div>
+    <div class="panel">
+      <h3 data-t>¿Terminó la semana?</h3>
+      <p class="note" data-t>Si querés variar, cambiá todas las comidas sugeridas por otras nuevas. Si te gustan las de ahora, dejalas como están.</p>
+      <button class="add" id="newWeek" data-t>Cambiar comidas de la semana</button>
+      <p class="note" id="nwMsg" style="margin:10px 0 0"></p>
+    </div>
+  </section>
+
+  
+<section id="aprender" hidden>
+    <h1 data-t>Aprender</h1>
+    <p class="sub" data-t>Lo esencial de la nutrición para quien baila.</p>
+    <div id="learn"></div>
+    <div class="care">
+      <b data-t>Una nota importante.</b> <span data-t>Esta app no cuenta calorías ni propone bajar de peso. Si sentís culpa al comer, miedo a ciertos alimentos o pensás todo el día en la comida, hablá con un profesional de la salud o un nutricionista deportivo. No tenés que esperar a que sea «grave».</span>
+    </div>
+  </section>
+</main>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" data-tab="hoy" aria-selected="true" data-t>Hoy</button>
+  <button role="tab" data-tab="ideas" aria-selected="false" data-t>Ideas</button>
+  <button role="tab" data-tab="aprender" aria-selected="false" data-t>Aprender</button>
+</nav>
+
+<script>
+const $=id=>document.getElementById(id);
+const today=new Date().toLocaleDateString("sv");
+const LV=[
+ {k:"Principiante",d:"Pocas horas de baile por semana. Comidas regulares y un snack si la clase dura 90 min o más.",fuel:90,rep:180,cups:6,sz:"pequeña"},
+ {k:"Intermedio",d:"Varias clases por semana. Snack antes y recuperación después de cada clase.",fuel:45,rep:150,cups:8,sz:"media"},
+ {k:"Profesional",d:"Muchas horas por día. Recargas cada 2 h en bloques largos y recuperación en cada pausa.",fuel:30,rep:120,cups:10,sz:"generosa"}
+];
+const KINDS=["Clase","Ensayo","Función"];
+const DURS=[45,60,75,90,120,150,180,240,300];
+const DN=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"],ORD=[1,2,3,4,5,6,0],TODAY=new Date().getDay();
+const PRE={
+ descanso:{n:"Descanso",c:[]},
+ liviano:{n:"Liviano",c:[{kind:"Clase",start:"18:00",dur:90}]},
+ normal:{n:"Normal",c:[{kind:"Clase",start:"10:00",dur:90},{kind:"Clase",start:"16:00",dur:90}]},
+ largo:{n:"Largo",c:[{kind:"Clase",start:"09:00",dur:90},{kind:"Ensayo",start:"11:30",dur:180},{kind:"Clase",start:"17:00",dur:90}]}
+};
+const mkDay=(type,wake)=>({type,wake,bed:"23:00",classes:PRE[type].c.map(c=>({...c})),over:{},done:{}});
+let state={diets:[],seed:0,offs:{},level:1,sel:TODAY,days:null,cups:0,day:today};
+try{const s=JSON.parse(localStorage.getItem("combustible3")||"null");if(s)state={...state,...s};}catch(e){}
+if(!state.days){state.days={};for(let i=0;i<7;i++)state.days[i]=i===6?mkDay("largo","08:30"):i===0?mkDay("descanso","09:00"):mkDay("normal","07:30");}
+if(state.day!==today){state.cups=0;Object.values(state.days).forEach(d=>d.done={});state.day=today;}
+state.sel=TODAY;
+const LANGS={es:"Español",en:"English",pt:"Português"};
+function detect(){try{for(const l of(navigator.languages||[navigator.language||"es"])){const c=String(l).slice(0,2).toLowerCase();if(LANGS[c])return c;}}catch(e){}return "en";}
+let LANG=(state.lang&&LANGS[state.lang])?state.lang:detect();
+const TR=[
+["Combustible · Nutrición para bailarines","Combustible · Nutrition for dancers","Combustible · Nutrição para dançarinos"],
+["Armá tu semana: cada día tiene sus propias clases y horarios, y la comida se organiza alrededor.","Plan your week: each day has its own classes and schedule, and your meals are organized around them.","Monte sua semana: cada dia tem suas próprias aulas e horários, e as refeições se organizam em torno deles."],
+["Tu nivel","Your level","Seu nível"],
+["¿Cómo es este día? Elegí uno y después ajustá lo que quieras.","What kind of day is it? Pick one, then adjust whatever you like.","Como é este dia? Escolha um e depois ajuste o que quiser."],
+["Me despierto","I wake up","Acordo"],["Me acuesto","I go to bed","Vou dormir"],
+["Clases y ensayos","Classes and rehearsals","Aulas e ensaios"],
+["Sumá todas las que tengas. Tus horarios de baile no se mueven: la comida se adapta a ellos.","Add all the ones you have. Your dance times never move: your meals adapt to them.","Adicione todas as que tiver. Seus horários de dança não mudam: as refeições se adaptam a eles."],
+["+ Agregar clase","+ Add class","+ Adicionar aula"],
+["Tu día en 24 horas","Your day in 24 hours","Seu dia em 24 horas"],
+["Agua de hoy","Today’s water","Água de hoje"],
+["Una base orientativa según tu nivel. Si ensayás mucho o hace calor, tomá más. La orina clara es una buena señal.","A rough guide based on your level. If you rehearse a lot or it’s hot, drink more. Pale urine is a good sign.","Uma referência de acordo com seu nível. Se ensaiar muito ou fizer calor, beba mais. Urina clara é um bom sinal."],
+["Opciones simples para llevar en el bolso. Elegí cómo comés y las sugerencias se ajustan, también en tu rutina de Hoy.","Simple options to carry in your bag. Choose how you eat and the suggestions adjust, including in your Today routine.","Opções simples para levar na bolsa. Escolha como você come e as sugestões se ajustam, inclusive na sua rotina de Hoje."],
+["Tu alimentación","How you eat","Sua alimentação"],
+["En productos envasados, buscá siempre el sello sin TACC. La avena común puede tener trazas de gluten: elegí una certificada.","On packaged products, always look for the gluten-free label. Regular oats may contain traces of gluten: choose certified ones.","Em produtos embalados, procure sempre o selo sem glúten. A aveia comum pode ter traços de glúten: escolha uma certificada."],
+["¿Terminó la semana?","Is the week over?","A semana acabou?"],
+["Si querés variar, cambiá todas las comidas sugeridas por otras nuevas. Si te gustan las de ahora, dejalas como están.","If you want variety, swap all suggested meals for new ones. If you like the current ones, leave them as they are.","Se quiser variar, troque todas as refeições sugeridas por novas. Se gostar das atuais, deixe como estão."],
+["Cambiar comidas de la semana","Change this week’s meals","Trocar as refeições da semana"],
+["Aprender","Learn","Aprender"],
+["Lo esencial de la nutrición para quien baila.","The essentials of nutrition for dancers.","O essencial da nutrição para quem dança."],
+["Una nota importante.","An important note.","Uma observação importante."],
+["Esta app no cuenta calorías ni propone bajar de peso. Si sentís culpa al comer, miedo a ciertos alimentos o pensás todo el día en la comida, hablá con un profesional de la salud o un nutricionista deportivo. No tenés que esperar a que sea «grave».","This app doesn’t count calories or suggest losing weight. If you feel guilty when you eat, afraid of certain foods, or think about food all day, talk to a health professional or a sports nutritionist. You don’t have to wait until it’s “serious”.","Este app não conta calorias nem sugere perder peso. Se você sente culpa ao comer, medo de certos alimentos ou pensa em comida o dia todo, converse com um profissional de saúde ou um nutricionista esportivo. Você não precisa esperar até que seja «grave»."],
+["Hoy","Today","Hoje"],["Ideas","Ideas","Ideias"],
+["Día de la semana","Day of the week","Dia da semana"],["Nivel","Level","Nível"],["Tipo de día","Day type","Tipo de dia"],["Copiar este día","Copy this day","Copiar este dia"],["Alimentación","Diet","Alimentação"],
+["Principiante","Beginner","Iniciante"],["Intermedio","Intermediate","Intermediário"],["Profesional","Professional","Profissional"],
+["Pocas horas de baile por semana. Comidas regulares y un snack si la clase dura 90 min o más.","A few hours of dance per week. Regular meals and a snack if the class lasts 90 min or more.","Poucas horas de dança por semana. Refeições regulares e um lanche se a aula durar 90 min ou mais."],
+["Varias clases por semana. Snack antes y recuperación después de cada clase.","Several classes per week. A snack before and recovery after each class.","Várias aulas por semana. Lanche antes e recuperação depois de cada aula."],
+["Muchas horas por día. Recargas cada 2 h en bloques largos y recuperación en cada pausa.","Many hours per day. Refuels every 2 h in long blocks and recovery in every break.","Muitas horas por dia. Recargas a cada 2 h em blocos longos e recuperação em cada pausa."],
+["pequeña","small","pequena"],["media","medium","média"],["generosa","generous","generosa"],
+["Porción {s}.","Portion size: {s}.","Porção {s}."],
+["Clase","Class","Aula"],["Ensayo","Rehearsal","Ensaio"],["Función","Performance","Apresentação"],
+["Descanso","Rest","Descanso"],["Liviano","Light","Leve"],["Normal","Regular","Normal"],["Largo","Long","Longo"],
+["Domingo","Sunday","Domingo"],["Lunes","Monday","Segunda"],["Martes","Tuesday","Terça"],["Miércoles","Wednesday","Quarta"],["Jueves","Thursday","Quinta"],["Viernes","Friday","Sexta"],["Sábado","Saturday","Sábado"],
+["(hoy)","(today)","(hoje)"],
+["Desayuno liviano","Light breakfast","Café da manhã leve"],["Desayuno","Breakfast","Café da manhã"],
+["Algo liviano antes de bailar. Ej.: {x}.","Something light before dancing. E.g.: {x}.","Algo leve antes de dançar. Ex.: {x}."],
+["Carbohidrato + proteína + fruta. Ej.: {x}.","Carbohydrate + protein + fruit. E.g.: {x}.","Carboidrato + proteína + fruta. Ex.: {x}."],
+["Almuerzo","Lunch","Almoço"],
+["Mitad del plato verdura, un cuarto proteína y un cuarto carbohidrato. Ej.: {x}.","Half the plate vegetables, a quarter protein and a quarter carbohydrate. E.g.: {x}.","Metade do prato de legumes, um quarto de proteína e um quarto de carboidrato. Ex.: {x}."],
+["Cena","Dinner","Jantar"],
+["Completa y con carbohidrato: ayuda a recuperar y a dormir mejor. Ej.: {x}.","A full meal with carbohydrates: helps you recover and sleep better. E.g.: {x}.","Completo e com carboidrato: ajuda a recuperar e a dormir melhor. Ex.: {x}."],
+["Sumá más carbohidrato hoy.","Add more carbohydrate today.","Aumente o carboidrato hoje."],
+["Snack antes de la clase","Snack before class","Lanche antes da aula"],["Snack antes de la función","Snack before the performance","Lanche antes da apresentação"],["Snack antes del ensayo","Snack before rehearsal","Lanche antes do ensaio"],
+["Carbohidrato fácil de digerir. Ej.: {x}.","Easy-to-digest carbohydrate. E.g.: {x}.","Carboidrato de fácil digestão. Ex.: {x}."],
+["Recarga durante","Refuel during","Recarga durante"],
+["Carbohidrato rápido. Ej.: {x}. Tragos de agua.","Quick carbohydrate. E.g.: {x}. Sips of water.","Carboidrato rápido. Ex.: {x}. Goles de água."],
+["Recarga rápida","Quick refuel","Recarga rápida"],
+["Hay poco tiempo hasta lo próximo. Ej.: {x}.","Not much time until the next one. E.g.: {x}.","Há pouco tempo até a próxima. Ex.: {x}."],
+["Recuperación","Recovery","Recuperação"],
+["Carbohidrato + proteína. Ej.: {x}.","Carbohydrate + protein. E.g.: {x}.","Carboidrato + proteína. Ex.: {x}."],
+["Merienda","Afternoon snack","Lanche da tarde"],
+["Algo liviano. Ej.: {x}.","Something light. E.g.: {x}.","Algo leve. Ex.: {x}."],
+["Dormís hasta las {h}.","You sleep until {h}.","Você dorme até {h}."],
+["Te despertás","You wake up","Você acorda"],
+["Un vaso de agua antes de empezar el día.","A glass of water before starting the day.","Um copo d’água antes de começar o dia."],
+["De {a} a {b} ({d}).","From {a} to {b} ({d}).","Das {a} às {b} ({d})."],
+["A dormir","Bedtime","Hora de dormir"],
+["Descanso hasta las {h} de mañana. Dormir bien también es entrenar.","Rest until {h} tomorrow. Sleeping well is also training.","Descanso até {h} de amanhã. Dormir bem também é treinar."],
+["Tipo","Type","Tipo"],["Hora de inicio","Start time","Horário de início"],["Duración","Duration","Duração"],["Quitar","Remove","Remover"],
+["Bailás {d} en {n} {c}.","You dance {d} across {n} {c}.","Você dança {d} em {n} {c}."],
+["clase","class","aula"],["clases","classes","aulas"],
+["Sin clases: es un día de descanso.","No classes: it’s a rest day.","Sem aulas: é um dia de descanso."],
+["Hay clases que se superponen.","Some classes overlap.","Há aulas que se sobrepõem."],
+["Revisá la hora de acostarte.","Check your bedtime.","Revise o horário de dormir."],
+["Sueño","Sleep","Sono"],["Baile","Dance","Dança"],["Comida","Food","Comida"],
+["Cambiá la hora de cualquier comida y el resto del día se reajusta. Tus clases no se mueven.","Change the time of any meal and the rest of the day readjusts. Your classes don’t move.","Mude o horário de qualquer refeição e o resto do dia se reajusta. Suas aulas não mudam."],
+["Volver a lo sugerido","Back to suggested","Voltar ao sugerido"],
+["recuperación","recovery","recuperação"],
+["Hace de recuperación después de clase.","Works as your recovery after class.","Serve como recuperação depois da aula."],
+["Coincide con una clase. Elegí otro horario.","Overlaps with a class. Pick another time.","Coincide com uma aula. Escolha outro horário."],
+["Listo","Done","Pronto"],["Hora","Time","Hora"],["Otra idea","Another idea","Outra ideia"],["Sugerido","Suggested","Sugerido"],
+["Vaso {n}","Glass {n}","Copo {n}"],
+["Copiar este día a…","Copy this day to…","Copiar este dia para…"],["Lunes a viernes","Monday to Friday","Segunda a sexta"],["Sábado y domingo","Saturday and Sunday","Sábado e domingo"],["Todos los días","Every day","Todos os dias"],
+["Listo, copiado.","Done, copied.","Pronto, copiado."],
+["Listo: ahora tenés comidas nuevas para la semana.","Done: you now have new meals for the week.","Pronto: agora você tem refeições novas para a semana."],
+["Como de todo","I eat everything","Como de tudo"],["Vegetariana","Vegetarian","Vegetariana"],["Vegana","Vegan","Vegana"],["Celíaca (sin TACC)","Celiac (gluten-free)","Celíaca (sem glúten)"],["Sin lactosa","Lactose-free","Sem lactose"],
+["Además, si corresponde","Also, if it applies","Além disso, se for o caso"],
+["Para empezar el día","To start the day","Para começar o dia"],["Antes de bailar","Before dancing","Antes de dançar"],["Carbohidrato fácil","Easy carbs","Carboidrato fácil"],["Durante ensayos","During rehearsals","Durante ensaios"],["Energía rápida","Quick energy","Energia rápida"],["Después de bailar","After dancing","Depois de dançar"],["Almuerzo y cena","Lunch and dinner","Almoço e jantar"],["Plato base","Main dish","Prato principal"],["Entre comidas","Between meals","Entre refeições"],["Otras ideas","More ideas","Mais ideias"]
+];
+const MAP={en:{},pt:{}};TR.forEach(r=>{MAP.en[r[0]]=r[1];MAP.pt[r[0]]=r[2];});
+const T=(s,o)=>{let r=LANG==="es"?s:(MAP[LANG][s]!==undefined?MAP[LANG][s]:s);if(o)for(const k in o)r=r.split("{"+k+"}").join(o[k]);return r;};
+const EXTRA={
+en:{des:["Oatmeal with milk, banana and walnuts","Toast with scrambled eggs and avocado","Yogurt with granola and fruit","Oat and banana pancakes with honey","Oatmeal with plant milk, berries and seeds","Toast with avocado and tomato","Banana, oat and almond milk smoothie","Scrambled eggs with roasted potatoes and fruit","Yogurt with fruit and chia seeds","Creamy polenta with cheese and fruit","Gluten-free toast with egg and tomato","Rice with plant milk, cinnamon and banana","Fruit bowl with seeds and plant milk"],
+pre:["Banana with peanut butter","Toast with jam","Yogurt with honey","Rice crackers with quince paste","Gluten-free toast with jam","Tangerines and a handful of raisins","Homemade oat and date bar","Applesauce with cinnamon","White rice with an egg","Boiled potato with a little salt"],
+dur:["Raisins and nuts","Banana","Dates","Orange or tangerine segments","Cereal bar","Rice crackers","Grapes","Homemade drink of water, lemon, salt and honey","Small jam sandwich"],
+pos:["Milk, banana and oat smoothie","Chicken and veggie sandwich","Yogurt with granola and fruit","Potato omelet with salad","Tuna and tomato sandwich","Banana, plant milk and peanut butter smoothie","Hummus, chickpea and veggie wrap","Rice with lentils and vegetables","Toast with egg and avocado","Yogurt with fruit and seeds","Baked potato with hard-boiled egg and salad"],
+plato:["Baked breaded chicken cutlet with rice and salad","Pasta with tomato sauce and lean beef","Baked fish with pumpkin purée","Chicken with rice and sautéed vegetables","Lentils with rice and vegetables","Spinach and egg pie","Chickpea curry with rice","Stir-fried rice noodles with tofu and vegetables","Vegetable omelet with mashed potatoes","Lentil stew with carrot and potato","Lentil burgers with salad and rice","Polenta with tomato sauce and cheese","Quinoa stir-fry with vegetables and tofu","Gluten-free pasta with tomato sauce and chicken","Gluten-free pasta with vegetables and cheese"],
+mer:["Fruit with yogurt","Toast with cream cheese","Toast with avocado","Fruit and milk smoothie","Handful of nuts and a piece of fruit","Homemade banana loaf","Rice crackers with hummus","Tea with toast and jam","Fresh cheese with sweet potato paste","Homemade popcorn with little oil"]},
+pt:{des:["Aveia com leite, banana e nozes","Torradas com ovos mexidos e abacate","Iogurte com granola e fruta","Panquecas de aveia e banana com mel","Aveia com bebida vegetal, frutas vermelhas e sementes","Torradas com abacate e tomate","Vitamina de banana, aveia e leite de amêndoas","Ovos mexidos com batata assada e fruta","Iogurte com frutas e sementes de chia","Polenta cremosa com queijo e fruta","Torradas de pão sem glúten com ovo e tomate","Arroz com bebida vegetal, canela e banana","Tigela de frutas com sementes e bebida vegetal"],
+pre:["Banana com pasta de amendoim","Torrada com geleia","Iogurte com mel","Biscoitos de arroz com goiabada","Torrada de pão sem glúten com geleia","Tangerinas e um punhado de uvas-passas","Barra caseira de aveia e tâmaras","Purê de maçã com canela","Arroz branco com um ovo","Batata cozida com um pouco de sal"],
+dur:["Uvas-passas e castanhas","Banana","Tâmaras","Gomos de laranja ou tangerina","Barra de cereal","Biscoitos de arroz","Uvas","Bebida caseira de água, limão, sal e mel","Sanduíche pequeno de geleia"],
+pos:["Vitamina de leite, banana e aveia","Sanduíche de frango com legumes","Iogurte com granola e fruta","Omelete de batata com salada","Sanduíche de atum e tomate","Vitamina de banana, bebida vegetal e pasta de amendoim","Wrap de homus, grão-de-bico e legumes","Arroz com lentilhas e legumes","Torradas com ovo e abacate","Iogurte com frutas e sementes","Batata assada com ovo cozido e salada"],
+plato:["Milanesa de frango assada com arroz e salada","Macarrão com molho de tomate e carne magra","Peixe assado com purê de abóbora","Frango com arroz e legumes salteados","Lentilhas com arroz e legumes","Torta de espinafre e ovo","Grão-de-bico ao curry com arroz","Macarrão de arroz salteado com tofu e legumes","Omelete de legumes com purê de batata","Ensopado de lentilhas com cenoura e batata","Hambúrguer de lentilha com salada e arroz","Polenta com molho de tomate e queijo","Salteado de quinoa com legumes e tofu","Macarrão sem glúten com molho de tomate e frango","Macarrão sem glúten com legumes e queijo"],
+mer:["Fruta com iogurte","Torrada com cream cheese","Torrada com abacate","Vitamina de frutas com leite","Punhado de castanhas e uma fruta","Bolo de banana caseiro","Biscoitos de arroz com homus","Chá com torradas e geleia","Queijo fresco com doce de batata-doce","Pipoca caseira com pouco óleo"]}
+};
+const nm=(cat,e)=>LANG==="es"?e[0]:(EXTRA[LANG][cat][e[2]]||e[0]);
+const LX={
+en:[{q:"Why are carbohydrates your allies?",a:"<p>They are the main fuel for classes and intense rehearsals. Without enough of them you get tiredness, dizziness, clumsiness and a higher risk of injury. Include a carbohydrate at every meal: rice, pasta, bread, potato, oats, fruit.</p>"},
+{q:"Protein: how much and when",a:"<p>Spread it across all your meals instead of concentrating it in one. It helps repair muscles and tendons.</p><ul><li>Eggs, chicken, fish, lean meat</li><li>Dairy and yogurt</li><li>Legumes, tofu, nuts</li></ul>"},
+{q:"Strong bones: calcium and vitamin D",a:"<p>Dancing puts a lot of demand on your bones. Calcium (dairy, sardines, broccoli) and vitamin D (sunlight, eggs, fatty fish) help prevent stress fractures. If you suspect a deficiency, a blood test will tell you for sure.</p>"},
+{q:"Iron and energy",a:"<p>Low iron causes fatigue and shortness of breath when dancing. It’s found in red meat, lentils, spinach and eggs. Pair it with a vitamin C source, like lemon or orange, to absorb it better. Talk to a doctor before taking supplements.</p>"},
+{q:"Hydration",a:"<p>Drink water throughout the day, not just when you dance. In rehearsals longer than an hour or in hot weather, add a bit of salt and sugar to your drink or food. Losing fluids reduces concentration and coordination.</p>"},
+{q:"Performance days",a:"<p>Have your main meal 3–4 hours before, with familiar carbohydrates and little fat. Avoid trying new foods that day. Bring a light snack and water for afterwards. Eating well when you finish is part of recovery.</p>"},
+{q:"Signs you’re not eating enough",a:"<ul><li>Constant fatigue or repeated injuries</li><li>Irregular or missing periods</li><li>Always feeling cold, dizziness or low mood</li><li>Sleeping poorly or getting sick often</li></ul><p>It’s known as low energy availability. It’s common in dance and it can be treated. Talk to a sports doctor or a nutritionist.</p>"}],
+pt:[{q:"Por que os carboidratos são seus aliados?",a:"<p>São o principal combustível para aulas e ensaios intensos. Sem o suficiente, aparecem cansaço, tontura, falta de coordenação e maior risco de lesão. Inclua um carboidrato em cada refeição: arroz, massa, pão, batata, aveia, frutas.</p>"},
+{q:"Proteína: quanto e quando",a:"<p>Distribua em todas as refeições em vez de concentrar em uma só. Ajuda a reparar músculos e tendões.</p><ul><li>Ovos, frango, peixe, carne magra</li><li>Laticínios e iogurte</li><li>Leguminosas, tofu, castanhas</li></ul>"},
+{q:"Ossos fortes: cálcio e vitamina D",a:"<p>Dançar exige muito dos ossos. O cálcio (laticínios, sardinha, brócolis) e a vitamina D (sol, ovo, peixe gordo) ajudam a prevenir fraturas por estresse. Se suspeitar de deficiência, um exame de sangue tira a dúvida.</p>"},
+{q:"Ferro e energia",a:"<p>A falta de ferro causa fadiga e falta de ar ao dançar. Está presente em carnes vermelhas, lentilhas, espinafre e ovo. Combine com uma fonte de vitamina C, como limão ou laranja, para absorver melhor. Antes de tomar suplementos, consulte um médico.</p>"},
+{q:"Hidratação",a:"<p>Beba água ao longo do dia, não só ao dançar. Em ensaios de mais de uma hora ou com muito calor, acrescente um pouco de sal e açúcar na bebida ou na comida. Perder líquidos reduz a concentração e a coordenação.</p>"},
+{q:"Dias de apresentação",a:"<p>Faça a refeição principal 3–4 horas antes, com carboidratos que você já conhece e pouca gordura. Evite experimentar alimentos novos nesse dia. Leve um lanche leve e água para depois. Comer bem ao terminar faz parte da recuperação.</p>"},
+{q:"Sinais de que você não está comendo o suficiente",a:"<ul><li>Cansaço constante ou lesões repetidas</li><li>Menstruação irregular ou ausente</li><li>Sentir frio o tempo todo, tontura ou mau humor</li><li>Dormir mal ou adoecer com frequência</li></ul><p>Chama-se baixa disponibilidade de energia. É comum na dança e tem solução. Consulte um médico do esporte ou um nutricionista.</p>"}]
+};
+function applyLang(){
+  document.documentElement.lang=LANG;document.title=T("Combustible · Nutrición para bailarines");
+  document.querySelectorAll("[data-t]").forEach(el=>{if(!el.dataset.es)el.dataset.es=el.textContent.trim();el.textContent=T(el.dataset.es);});
+  [["days","Día de la semana"],["levels","Nivel"],["dtype","Tipo de día"],["copyTo","Copiar este día"],["diets","Alimentación"]].forEach(([i,s])=>$(i).setAttribute("aria-label",T(s)));
+  fillCopy();$("lang").value=LANG;renderStatic();renderAll();
+}
+const D=()=>state.days[state.sel];
+function save(){try{localStorage.setItem("combustible3",JSON.stringify(state));}catch(e){}}
+const toMin=t=>{const [h,m]=t.split(":").map(Number);return h*60+m;};
+const fmt=m=>{m=((m%1440)+1440)%1440;return String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0");};
+const durTxt=d=>d>=60?Math.floor(d/60)+" h"+(d%60?" "+d%60+" min":""):d+" min";
+
+function plan(){
+  const L=LV[state.level],W=toMin(D().wake),B=Math.max(toMin(D().bed),W+120),O=D().over;
+  const cls=D().classes.map(c=>({...c,s:toMin(c.start),e:toMin(c.start)+c.dur})).sort((a,b)=>a.s-b.s);
+  const total=cls.reduce((a,c)=>a+c.dur,0),sz=" "+T("Porción {s}.",{s:T(L.sz)}),more=total>=240?" "+T("Sumá más carbohidrato hoy."):"";
+  const inC=t=>cls.some(c=>t>c.s&&t<c.e);
+  const sw=D().sw||(D().sw={}),ex=(cat,salt,id)=>{const l=list(cat);return nm(cat,l[(state.sel+salt+(sw[id]||0))%l.length]);};
+  const foods=[];
+  const add=(id,at,t,d)=>foods.push({id,at,t,d});
+  const near=(t,g)=>foods.some(f=>Math.abs(f.at-t)<g);
+  const pin=id=>O[id]!=null?toMin(O[id]):null;
+  const settle=(t,id)=>{
+    if(pin(id)!=null)return pin(id);
+    for(let i=0;i<6;i++){const c=cls.find(c=>t>c.s-75&&t<c.e);if(!c)break;t=(t<=c.s&&c.s-150>=W+30)?c.s-150:c.e+30;}
+    return t;
+  };
+  const first=cls[0];
+  let light=false,bf=W+45;
+  if(pin("bf")!=null)bf=pin("bf");
+  else if(first&&first.s>W&&first.s-W<150){light=true;bf=Math.max(W+10,Math.min(W+45,first.s-60));}
+  else bf=settle(bf,"bf");
+  add("bf",bf,T(light?"Desayuno liviano":"Desayuno"),light?T("Algo liviano antes de bailar. Ej.: {x}.",{x:ex("pre",0,"bf")})+sz:T("Carbohidrato + proteína + fruta. Ej.: {x}.",{x:ex("des",0,"bf")}));
+  const lu=settle(Math.max(810,bf+150),"lunch");
+  add("lunch",lu,T("Almuerzo"),T("Mitad del plato verdura, un cuarto proteína y un cuarto carbohidrato. Ej.: {x}.",{x:ex("plato",0,"lunch")})+more);
+  const din=settle(Math.min(B-60,Math.max(lu+180,Math.min(1260,B-120))),"dinner");
+  add("dinner",din,T("Cena"),T("Completa y con carbohidrato: ayuda a recuperar y a dormir mejor. Ej.: {x}.",{x:ex("plato",3,"dinner")})+more);
+  cls.forEach((c,i)=>{
+    if(c.dur<L.fuel)return;
+    const next=cls[i+1],k=c.kind.toLowerCase();
+    const prior=foods.filter(f=>f.at<=c.s).sort((a,b)=>b.at-a.at)[0];
+    if(!prior||c.s-prior.at>=120){
+      const t=Math.max(c.s-60,prior?prior.at+90:W+20);
+      if(t<c.s-20&&!inC(t)&&!near(t,30))add("pre"+i,t,T(k==="clase"?"Snack antes de la clase":k==="función"?"Snack antes de la función":"Snack antes del ensayo"),T("Carbohidrato fácil de digerir. Ej.: {x}.",{x:ex("pre",i,"pre"+i)})+sz);
+    }
+    for(let t=c.s+L.rep;t<c.e-30;t+=L.rep)add("mid"+i+"_"+t,t,T("Recarga durante"),T("Carbohidrato rápido. Ej.: {x}. Tragos de agua.",{x:ex("dur",i+t,"mid"+i+"_"+t)})+sz);
+    const nf=foods.filter(f=>f.at>c.e).sort((a,b)=>a.at-b.at)[0];
+    if(nf&&nf.at-c.e<=75)nf.rec=true;
+    else if(next&&next.s-c.e<=60){if(!near(c.e+5,20))add("post"+i,c.e+5,T("Recarga rápida"),T("Hay poco tiempo hasta lo próximo. Ej.: {x}.",{x:ex("dur",i+1,"post"+i)})+sz);}
+    else{let t=c.e+30;if(next&&t>next.s-30)t=c.e+5;add("post"+i,t,T("Recuperación"),T("Carbohidrato + proteína. Ej.: {x}.",{x:ex("pos",i,"post"+i)})+sz);}
+  });
+  foods.sort((a,b)=>a.at-b.at);
+  const pts=[W,...foods.map(f=>f.at),B];let n=0;
+  for(let k=0;k<pts.length-1;k++){
+    const a=pts[k],b=pts[k+1];
+    if(b-a>=270){let t=a+180;const c=cls.find(c=>t>c.s-30&&t<c.e);if(c)t=c.e+30;if(t<b-60&&!near(t,40)){const gid="gap"+n++;add(gid,t,T("Merienda"),T("Algo liviano. Ej.: {x}.",{x:ex("mer",n,gid)})+sz);}}
+  }
+  foods.forEach(f=>{const p=pin(f.id);if(p!=null){f.at=p;f.pinned=true;}f.warn=!!f.pinned&&!f.id.startsWith("mid")&&inC(f.at);});
+  const items=[];
+  if(W>0)items.push({type:"sleep",at:0,t:T("Descanso"),d:T("Dormís hasta las {h}.",{h:fmt(W)})});
+  items.push({type:"wake",at:W,t:T("Te despertás"),d:T("Un vaso de agua antes de empezar el día.")});
+  cls.forEach(c=>items.push({type:"class",at:c.s,t:T(c.kind),d:T("De {a} a {b} ({d}).",{a:fmt(c.s),b:fmt(c.e),d:durTxt(c.dur)})}));
+  foods.forEach(f=>items.push({type:"food",...f}));
+  items.push({type:"bed",at:B,t:T("A dormir"),d:T("Descanso hasta las {h} de mañana. Dormir bien también es entrenar.",{h:fmt(W)})});
+  items.sort((a,b)=>a.at-b.at);
+  return {items,cls,foods,W,B,total,overlap:cls.some((c,i)=>i&&c.s<cls[i-1].e)};
+}
+
+function renderLevels(){
+  $("levels").innerHTML=LV.map((l,i)=>`<button class="chip" data-l="${i}" aria-pressed="${state.level===i}">${T(l.k)}</button>`).join("");
+  $("lvDesc").textContent=T(LV[state.level].d);
+}
+function renderClasses(){
+  $("classes").innerHTML=D().classes.map((c,i)=>`<div class="row" data-i="${i}">
+<select data-f="kind" aria-label="${T("Tipo")}">${KINDS.map(k=>`<option value="${k}"${k===c.kind?" selected":""}>${T(k)}</option>`).join("")}</select>
+<input type="time" data-f="start" value="${c.start}" aria-label="${T("Hora de inicio")}">
+<select data-f="dur" aria-label="${T("Duración")}">${DURS.map(d=>`<option value="${d}"${d===c.dur?" selected":""}>${durTxt(d)}</option>`).join("")}</select>
+<button class="x" data-del="${i}" aria-label="${T("Quitar")}">✕</button></div>`).join("");
+  const P=plan(),n=D().classes.length;
+  let s=n?T("Bailás {d} en {n} {c}.",{d:durTxt(P.total),n:n,c:T(n===1?"clase":"clases")}):T("Sin clases: es un día de descanso.");
+  if(P.overlap)s+=" "+T("Hay clases que se superponen.");
+  if(toMin(D().bed)<=toMin(D().wake)+120)s+=" "+T("Revisá la hora de acostarte.");
+  $("sumry").textContent=s;
+}
+function renderDay(){
+  const P=plan(),pc=m=>Math.min(100,Math.max(0,m/14.4));
+  const seg=(a,b,c)=>`<span class="seg ${c}" style="left:${pc(a).toFixed(2)}%;width:${(pc(b)-pc(a)).toFixed(2)}%"></span>`;
+  $("dayBar").innerHTML=`<div class="bar">${seg(0,P.W,"sg-s")}${seg(P.B,1440,"sg-s")}${P.cls.map(c=>seg(c.s,c.e,"sg-d")).join("")}${P.foods.map(f=>`<i class="tick" style="left:${pc(f.at).toFixed(2)}%"></i>`).join("")}</div><div class="hours"><span>0 h</span><span>6 h</span><span>12 h</span><span>18 h</span><span>24 h</span></div><div class="legend"><span><i style="background:var(--line)"></i>${T("Sueño")}</span><span><i style="background:var(--accent)"></i>${T("Baile")}</span><span><i style="background:var(--sage)"></i>${T("Comida")}</span></div>`;
+  $("hint").innerHTML=T("Cambiá la hora de cualquier comida y el resto del día se reajusta. Tus clases no se mueven.")+(Object.keys(D().over).length?' <button class="lnk" id="resetO">'+T("Volver a lo sugerido")+'</button>':"");
+  $("timeline").innerHTML=P.items.map(x=>{
+    if(x.type==="food")return `<li><time>${fmt(x.at)}</time><div class="step${D().done[x.id]?" done":""}${x.warn?" warn":""}"><b>${x.t}${x.rec?" + "+T("recuperación"):""}</b><span>${x.d}${x.rec?" "+T("Hace de recuperación después de clase."):""}</span>${x.warn?'<div class="warnt">${T("Coincide con una clase. Elegí otro horario.")}</div>':""}<div class="ctl"><label><input type="checkbox" data-done="${x.id}"${D().done[x.id]?" checked":""}> ${T("Listo")}</label><label>${T("Hora")} <input type="time" data-ft="${x.id}" value="${fmt(x.at)}"></label><button class="lnk" data-swap="${x.id}">${T("Otra idea")}</button>${x.pinned?`<button class="lnk" data-auto="${x.id}">${T("Sugerido")}</button>`:""}</div></div></li>`;
+    return `<li><time>${fmt(x.at)}</time><div class="step ${x.type==="class"?"event":"quiet"}"><b>${x.t}</b><span>${x.d}</span></div></li>`;
+  }).join("");
+}
+function renderCups(){
+  const n=LV[state.level].cups;if(state.cups>n)state.cups=n;
+  const c=$("cups");
+  c.innerHTML=Array.from({length:n},(_,i)=>`<button class="cup" aria-label="${T("Vaso {n}",{n:i+1})}" aria-pressed="${state.cups>i}" data-i="${i}"></button>`).join("");
+  c.querySelectorAll(".cup").forEach(b=>b.onclick=()=>{const k=+b.dataset.i+1;state.cups=state.cups===k?k-1:k;save();renderCups();});
+}
+
+const POOL={
+des:[["Avena con leche, banana y nueces","V"],["Tostadas con huevo revuelto y palta","VL"],["Yogur con granola y fruta","V"],["Panqueques de avena y banana con miel","V"],["Avena con bebida vegetal, frutos rojos y semillas","VGL"],["Tostadas con palta y tomate","VGL"],["Licuado de banana, avena y bebida de almendras","VGL"],["Huevos revueltos con papa al horno y fruta","VCL"],["Yogur con frutas y semillas de chía","VC"],["Polenta cremosa con queso y fruta","VC"],["Tostadas de pan sin TACC con huevo y tomate","VCL"],["Arroz con bebida vegetal, canela y banana","VGCL"],["Bowl de frutas con semillas y bebida vegetal","VGCL"]],
+pre:[["Banana con manteca de maní","VGCL"],["Tostada con mermelada","VGL"],["Yogur con miel","VC"],["Galletitas de arroz con dulce de membrillo","VGCL"],["Tostada de pan sin TACC con mermelada","VGCL"],["Mandarinas y un puñado de pasas de uva","VGCL"],["Barra casera de avena y dátiles","VGL"],["Puré de manzana con canela","VGCL"],["Arroz blanco con un huevo","VCL"],["Papa hervida con un poco de sal","VGCL"]],
+dur:[["Pasas de uva y frutos secos","VGCL"],["Banana","VGCL"],["Dátiles","VGCL"],["Gajos de naranja o mandarina","VGCL"],["Barra de cereal","V"],["Galletitas de arroz","VGCL"],["Uvas","VGCL"],["Bebida casera de agua, limón, sal y miel","VCL"],["Sándwich chico de mermelada","VGL"]],
+pos:[["Licuado de leche, banana y avena","V"],["Sándwich de pollo con verduras","L"],["Yogur con granola y fruta","V"],["Tortilla de papa con ensalada","VCL"],["Sándwich de atún y tomate","L"],["Licuado de banana, bebida vegetal y manteca de maní","VGCL"],["Wrap de hummus, garbanzos y verduras","VGL"],["Arroz con lentejas y verduras","VGCL"],["Tostadas con huevo y palta","VL"],["Yogur con frutas y semillas","VC"],["Papa al horno con huevo duro y ensalada","VCL"]],
+plato:[["Milanesa de pollo al horno con arroz y ensalada","L"],["Fideos con salsa de tomate y carne magra","L"],["Pescado al horno con puré de calabaza","CL"],["Pollo con arroz y verduras salteadas","CL"],["Lentejas con arroz y verduras","VGCL"],["Tarta de espinaca y huevo","V"],["Garbanzos al curry con arroz","VGCL"],["Fideos de arroz salteados con tofu y verduras","VGCL"],["Tortilla de verduras con puré de papa","VCL"],["Guiso de lentejas con zanahoria y papa","VGCL"],["Hamburguesas de lentejas con ensalada y arroz","VGL"],["Polenta con salsa de tomate y queso","VC"],["Salteado de quinoa con verduras y tofu","VGCL"],["Pasta sin TACC con salsa de tomate y pollo","CL"],["Pasta sin TACC con verduras y queso","VC"]],
+mer:[["Fruta con yogur","VC"],["Tostada con queso untable","V"],["Tostada con palta","VGL"],["Licuado de frutas con leche","VC"],["Puñado de frutos secos y una fruta","VGCL"],["Budín de banana casero","V"],["Galletitas de arroz con hummus","VGCL"],["Té con tostadas y mermelada","VGL"],["Queso fresco con dulce de batata","VC"],["Pochoclo casero con poco aceite","VGCL"]]
+};
+const CATS=[["des","Desayuno","Para empezar el día"],["pre","Antes de bailar","Carbohidrato fácil"],["dur","Durante ensayos","Energía rápida"],["pos","Después de bailar","Recuperación"],["plato","Almuerzo y cena","Plato base"],["mer","Merienda","Entre comidas"]];
+const DIETS=[["","Como de todo"],["V","Vegetariana"],["G","Vegana"],["C","Celíaca (sin TACC)"],["L","Sin lactosa"]];
+const okDiet=f=>state.diets.every(d=>f.includes(d));
+function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function list(cat){
+  const all=POOL[cat].map((p,i)=>[p[0],p[1],i]);let l=all.filter(([,f])=>okDiet(f));
+  if(!l.length)l=all;
+  const r=rng(state.seed*977+[...cat].reduce((a,c)=>a+c.charCodeAt(0),0));
+  for(let i=l.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[l[i],l[j]]=[l[j],l[i]];}
+  return l;
+}
+function renderIdeas(){
+  const chipH=a=>a.map(([k,n])=>`<button class="chip" data-diet="${k}" aria-pressed="${k?state.diets.includes(k):!state.diets.some(d=>d==="V"||d==="G")}">${T(n)}</button>`).join("");
+  $("diets").innerHTML=chipH(DIETS.slice(0,3))+'<span class="note" style="flex-basis:100%;margin-top:4px">'+T("Además, si corresponde")+'</span>'+chipH(DIETS.slice(3));$("dietNote").hidden=!state.diets.includes("C");
+  $("ideaList").innerHTML=CATS.map(([id,h,tag])=>{
+    const l=list(id),o=(state.offs[id]||0)*4;
+    const show=Array.from({length:Math.min(4,l.length)},(_,i)=>nm(id,l[(o+i)%l.length]));
+    return `<div class="card"><span class="tag">${T(tag)}</span><h3>${T(h)}</h3><ul>${show.map(x=>`<li>${x}</li>`).join("")}</ul><button class="lnk" data-more="${id}">${T("Otras ideas")}</button></div>`;
+  }).join("");
+}
+
+const LEARN = [
+ {q:"¿Por qué los carbohidratos son tus aliados?", a:"<p>Son el combustible principal para clases y ensayos intensos. Sin suficientes, aparecen cansancio, mareos, torpeza y más riesgo de lesión. Incluí un carbohidrato en cada comida: arroz, pasta, pan, papa, avena, frutas.</p>"},
+ {q:"Proteína: cuánta y cuándo", a:"<p>Repartila en todas las comidas en vez de concentrarla en una sola. Ayuda a reparar músculos y tendones.</p><ul><li>Huevos, pollo, pescado, carne magra</li><li>Lácteos y yogur</li><li>Legumbres, tofu, frutos secos</li></ul>"},
+ {q:"Huesos fuertes: calcio y vitamina D", a:"<p>Bailar exige mucho a los huesos. El calcio (lácteos, sardinas, brócoli) y la vitamina D (sol, huevo, pescado graso) ayudan a prevenir fracturas por estrés. Si sospechás un déficit, un análisis de sangre te da certeza.</p>"},
+ {q:"Hierro y energía", a:"<p>La falta de hierro causa fatiga y falta de aire al bailar. Se encuentra en carnes rojas, lentejas, espinaca y huevo. Combinalo con una fuente de vitamina C, como limón o naranja, para absorberlo mejor. Antes de tomar suplementos, consultá a un médico.</p>"},
+ {q:"Hidratación", a:"<p>Tomá agua durante todo el día, no solo al bailar. En ensayos de más de una hora o con mucho calor, sumá algo de sal y azúcar en la bebida o en la comida. Una pérdida de líquidos baja la concentración y la coordinación.</p>"},
+ {q:"Días de función", a:"<p>Hacé la comida fuerte 3–4 horas antes, con carbohidrato conocido y poca grasa. Evitá probar alimentos nuevos ese día. Llevá un snack liviano y agua para después. Cenar bien al terminar es parte de la recuperación.</p>"},
+ {q:"Señales de que no estás comiendo lo suficiente", a:"<ul><li>Cansancio constante o lesiones repetidas</li><li>Menstruación irregular o ausente</li><li>Frío todo el tiempo, mareos o mal humor</li><li>Dormir mal o enfermarte seguido</li></ul><p>Se conoce como baja disponibilidad de energía. Es común en la danza y tiene solución. Consultá a un médico deportivo o a un nutricionista.</p>"}
+];
+function renderStatic(){
+  document.getElementById("learn").innerHTML = (LANG==="es"?LEARN:LX[LANG]).map(x=>
+    `<details><summary>${x.q}</summary>${x.a}</details>`).join("");
+}
+function renderDays(){
+  $("days").innerHTML=ORD.map(i=>`<button data-d="${i}" aria-pressed="${state.sel===i}"${i===TODAY?' class="today"':""}>${T(DN[i]).slice(0,3)}</button>`).join("");
+  $("dayName").textContent=T(DN[state.sel])+(state.sel===TODAY?" "+T("(hoy)"):"");
+  $("wake").value=D().wake;$("bed").value=D().bed;
+  renderTypes();
+}
+function renderTypes(){
+  $("dtype").innerHTML=Object.entries(PRE).map(([k,v])=>`<button class="chip" data-t="${k}" aria-pressed="${D().type===k}">${T(v.n)}</button>`).join("");
+}
+function touch(){D().type="custom";D().done={};save();renderTypes();renderClasses();renderDay();}
+function renderAll(){renderDays();renderLevels();renderClasses();renderDay();renderCups();renderIdeas();}
+$("days").onclick=e=>{const b=e.target.closest("[data-d]");if(!b)return;state.sel=+b.dataset.d;save();renderAll();};
+$("dtype").onclick=e=>{const b=e.target.closest("[data-t]");if(!b)return;const k=b.dataset.t,d=D();d.type=k;d.classes=PRE[k].c.map(c=>({...c}));d.done={};save();renderTypes();renderClasses();renderDay();};
+const fillCopy=()=>{$("copyTo").innerHTML='<option value="">'+T("Copiar este día a…")+'</option><option value="wk">'+T("Lunes a viernes")+'</option><option value="we">'+T("Sábado y domingo")+'</option><option value="all">'+T("Todos los días")+'</option>';};
+$("copyTo").onchange=e=>{
+  const g={wk:[1,2,3,4,5],we:[6,0],all:[0,1,2,3,4,5,6]}[e.target.value];if(!g)return;
+  const src=JSON.stringify(D());
+  g.forEach(i=>{if(i!==state.sel){const c=JSON.parse(src);c.done={};state.days[i]=c;}});
+  e.target.value="";save();$("copyMsg").textContent=T("Listo, copiado.");setTimeout(()=>$("copyMsg").textContent="",2500);
+};
+$("levels").onclick=e=>{const b=e.target.closest("[data-l]");if(!b)return;state.level=+b.dataset.l;save();renderLevels();renderDay();renderCups();};
+["wake","bed"].forEach(id=>$(id).onchange=e=>{if(!e.target.value)return;D()[id]=e.target.value;save();renderClasses();renderDay();});
+$("addC").onclick=()=>{
+  const last=D().classes.map(c=>toMin(c.start)+c.dur).sort((a,b)=>b-a)[0];
+  D().classes.push({kind:"Clase",start:fmt(Math.min((last||540)+60,1380)),dur:90});
+  touch();
+};
+$("classes").addEventListener("change",e=>{
+  const r=e.target.closest("[data-i]"),f=e.target.dataset.f;
+  if(!r||!f||!e.target.value)return;
+  D().classes[+r.dataset.i][f]=f==="dur"?+e.target.value:e.target.value;
+  touch();
+});
+$("classes").addEventListener("click",e=>{
+  const d=e.target.closest("[data-del]");
+  if(d){D().classes.splice(+d.dataset.del,1);touch();}
+});
+$("timeline").addEventListener("change",e=>{
+  const t=e.target;
+  if(t.dataset.done){D().done[t.dataset.done]=t.checked;save();renderDay();}
+  else if(t.dataset.ft&&t.value){D().over[t.dataset.ft]=t.value;save();renderClasses();renderDay();}
+});
+$("timeline").addEventListener("click",e=>{const w=e.target.dataset.swap;if(w){const s=D().sw||(D().sw={});s[w]=(s[w]||0)+1;save();renderDay();return;}const a=e.target.dataset.auto;if(a){delete D().over[a];save();renderClasses();renderDay();}});
+$("hint").addEventListener("click",e=>{if(e.target.id==="resetO"){D().over={};save();renderClasses();renderDay();}});
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
+  ["hoy","ideas","aprender"].forEach(id=>$(id).hidden=id!==b.dataset.tab);
+  window.scrollTo(0,0);
+});
+$("lang").innerHTML=Object.entries(LANGS).map(([k,n])=>`<option value="${k}">${n}</option>`).join("");$("lang").onchange=e=>{LANG=e.target.value;state.lang=LANG;save();applyLang();};applyLang();
+$("diets").onclick=e=>{const b=e.target.closest("[data-diet]");if(!b)return;const k=b.dataset.diet;if(k==="V"||k==="G"||!k){state.diets=state.diets.filter(x=>x!=="V"&&x!=="G");if(k)state.diets.push(k);}else{const i=state.diets.indexOf(k);if(i<0)state.diets.push(k);else state.diets.splice(i,1);}save();renderIdeas();renderDay();};
+$("ideaList").onclick=e=>{const b=e.target.closest("[data-more]");if(!b)return;const k=b.dataset.more;state.offs[k]=(state.offs[k]||0)+1;save();renderIdeas();};
+$("newWeek").onclick=()=>{state.seed++;state.offs={};Object.values(state.days).forEach(d=>d.sw={});save();renderIdeas();renderDay();$("nwMsg").textContent=T("Listo: ahora tenés comidas nuevas para la semana.");setTimeout(()=>$("nwMsg").textContent="",3500);};
+</script>
+</body>
+</html>
